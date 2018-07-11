@@ -1,1 +1,1 @@
-node app.js
+twitch-parser.vbs

@@ -5,6 +5,8 @@ const twitch = require('twitch-api-v5');
 const request = require('request');
 const download = require('download-file');
 const { exec } = require('child_process');
+const notifier = require('node-notifier');
+const path = require('path');
 
 app.get('/',function(req, res) {
   res.sendFile(__dirname + '/client/index.html');
@@ -15,7 +17,9 @@ serv.listen(process.env.PORT || 2000);
 console.log('Server Started');
 
 function TwitchParser () {
-    this.size = 5;
+    const parser = this;
+
+    this.size = 10;
     this.clipList = [];
     this.options = {
         directory: '',
@@ -37,14 +41,15 @@ function TwitchParser () {
     this.getClips = (config, callback) => {
         twitch.clientID = 'foawqf11szicd1l0x5z336np76po9ly';
 
-        console.log('Sending request!');
+        this.sendNotification({
+            message: 'Getting top clips!',
+            wait: false
+        });
 
         twitch.clips.top(config, (error, result) => {
             if (error) {
               console.log(error);
             } else {
-                console.log('Success!');
-
                 callback();
 
                 result.clips.forEach((clip, index) => {
@@ -57,21 +62,44 @@ function TwitchParser () {
     };
 
     this.downloadClips = (clip, index) => {
-        console.log('Download started >', this.options.filename);
-
         download(this.generateDownloadUrl(clip), this.options, (error) => {
-            console.log('Download completed >', this.clipList[index]);
-
             if (index + 1 === this.size) {
-                console.log('All videos are downloaded!');
-
-                exec('start videos\\' + this.getFormattedDate());
-
-                setTimeout(() => {
+                this.sendNotification({
+                    message: 'Clips are ready!',
+                    wait: true
+                }, () => {
+                    exec('start videos\\' + parser.getFormattedDate());
+                    setTimeout(() => {
+                        process.exit();
+                    }, 2000);
+                }, () => {
                     process.exit();
-                }, 2000);
+                });
             }
         });
+    };
+
+    this.sendNotification = (config, onClick, timeout) => {
+        notifier.notify({
+            title: 'Twitch Parser',
+            message: config.message,
+            icon: path.join(__dirname, 'icon.ico'),
+            sound: false,
+            wait: config.wait
+        });
+
+        if (typeof onClick === 'function') {
+            notifier.on('click', function(notifierObject, options) {
+                // Triggers if `wait: true` and user clicks notification
+                onClick();
+            });
+        };
+
+        if (typeof timeout === 'function') {
+            notifier.on('timeout', function(notifierObject, options) {
+                timeout();
+            });
+        };
     };
 
     this.generateDownloadUrl = (clip) => {

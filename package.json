@@ -20,8 +20,9 @@
     "download-file": "^0.1.5",
     "express": "^4.16.3",
     "ffmpeg": "0.0.4",
+    "node-notifier": "^5.2.1",
     "node.js": "0.0.0",
     "request": "^2.87.0",
-    "twitch-api-v5": "^2.0.4",
+    "twitch-api-v5": "^2.0.4"
   }
 }
