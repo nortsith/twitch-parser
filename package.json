@@ -1,0 +1,27 @@
+{
+  "name": "twitch-parser",
+  "version": "1.0.0",
+  "description": "Parse top clips from twitch",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onurssx9/twitch-parser.git"
+  },
+  "author": "Onur Sahin Senturk",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/onurssx9/twitch-parser/issues"
+  },
+  "homepage": "https://github.com/onurssx9/twitch-parser#readme",
+  "devDependencies": {
+    "download-file": "^0.1.5",
+    "express": "^4.16.3",
+    "ffmpeg": "0.0.4",
+    "node.js": "0.0.0",
+    "request": "^2.87.0",
+    "twitch-api-v5": "^2.0.4",
+  }
+}
