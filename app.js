@@ -39,7 +39,7 @@ function TwitchParser () {
     };
 
     this.getClips = (config, callback) => {
-        twitch.clientID = 'foawqf11szicd1l0x5z336np76po9ly';
+        twitch.clientID = 'th6nyhyb09o3rn71ozhhemx5se9lsp';
 
         this.sendNotification({
             message: 'Getting top clips!',
