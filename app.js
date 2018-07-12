@@ -19,7 +19,8 @@ console.log('Server Started');
 function TwitchParser () {
     const parser = this;
 
-    this.size = 10;
+    this.size = 20;
+    this.completed = 0;
     this.clipList = [];
     this.options = {
         directory: '',
@@ -30,7 +31,7 @@ function TwitchParser () {
         this.getClips({
             limit: this.size,
             language: 'en',
-            period: 'week',
+            period: 'day',
             trending: false
         }, () => {
             this.createFolder();
@@ -53,7 +54,7 @@ function TwitchParser () {
                 callback();
 
                 result.clips.forEach((clip, index) => {
-                    this.setFileName(clip.title);
+                    this.setFileName(index.toString());
                     this.clipList.push(this.options.filename);
                     this.downloadClips(clip, index);
                 });
@@ -63,7 +64,9 @@ function TwitchParser () {
 
     this.downloadClips = (clip, index) => {
         download(this.generateDownloadUrl(clip), this.options, (error) => {
-            if (index + 1 === this.size) {
+            this.completed += 1;
+
+            if (this.completed === this.size) {
                 this.sendNotification({
                     message: 'Clips are ready!',
                     wait: true
