@@ -19,7 +19,7 @@ console.log('Server Started');
 function TwitchParser () {
     const parser = this;
 
-    this.size = 20;
+    this.size = 1;
     this.completed = 0;
     this.clipList = [];
     this.options = {
@@ -28,6 +28,7 @@ function TwitchParser () {
     };
 
     this.initialize = () => {
+        this.registerApp();
         this.getClips({
             limit: this.size,
             language: 'en',
@@ -39,11 +40,18 @@ function TwitchParser () {
         });
     };
 
+    this.registerApp = function () {
+        exec('"' + __dirname + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" -install ' +
+            '"%AppData%\\Microsoft\\Windows\\Start Menu\\Programs\\Twitch Parser.lnk" ' +
+            '"' + __dirname + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" twitch-parser');
+    };
+
     this.getClips = (config, callback) => {
         twitch.clientID = 'th6nyhyb09o3rn71ozhhemx5se9lsp';
 
         this.sendNotification({
-            message: 'Getting top clips!',
+            title: 'Getting top clips!',
+            message: 'This will take time depending on your download speed.',
             wait: false
         });
 
@@ -68,7 +76,8 @@ function TwitchParser () {
 
             if (this.completed === this.size) {
                 this.sendNotification({
-                    message: 'Clips are ready!',
+                    title: 'Clips are ready!',
+                    message: 'Click to open download folder.',
                     wait: true
                 }, () => {
                     exec('start videos\\' + parser.getFormattedDate());
@@ -84,16 +93,16 @@ function TwitchParser () {
 
     this.sendNotification = (config, onClick, timeout) => {
         notifier.notify({
-            title: 'Twitch Parser',
+            title: config.title,
             message: config.message,
             icon: path.join(__dirname, 'icon.ico'),
             sound: false,
+            appID: 'twitch-parser',
             wait: config.wait
         });
 
         if (typeof onClick === 'function') {
             notifier.on('click', function(notifierObject, options) {
-                // Triggers if `wait: true` and user clicks notification
                 onClick();
             });
         };
