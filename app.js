@@ -19,7 +19,8 @@ console.log('Server Started');
 function TwitchParser () {
     const parser = this;
 
-    this.size = 1;
+    this.size = 2;
+    this.period = 'day',
     this.completed = 0;
     this.clipList = [];
     this.options = {
@@ -32,7 +33,7 @@ function TwitchParser () {
         this.getClips({
             limit: this.size,
             language: 'en',
-            period: 'day',
+            period: this.period,
             trending: false
         }, () => {
             this.createFolder();
@@ -49,8 +50,10 @@ function TwitchParser () {
     this.getClips = (config, callback) => {
         twitch.clientID = 'th6nyhyb09o3rn71ozhhemx5se9lsp';
 
+        let title = this.size > 1 && (this.size + ' clips') || 'clip';
+
         this.sendNotification({
-            title: 'Getting top clips!',
+            title: 'Getting top ' + title + ' of the ' + this.period + '!',
             message: 'This will take time depending on your download speed.',
             wait: false
         });
@@ -75,9 +78,11 @@ function TwitchParser () {
             this.completed += 1;
 
             if (this.completed === this.size) {
+                let title = this.size > 1 && (this.size + ' clips') || 'clip';
+                let be = this.size > 1 && ' are ' || ' is ';
                 this.sendNotification({
-                    title: 'Clips are ready!',
-                    message: 'Click to open download folder.',
+                    title: 'Top ' + title + ' of the ' + this.period + be + 'ready!',
+                    message: 'Click to show in folder.',
                     wait: true
                 }, () => {
                     exec('start videos\\' + parser.getFormattedDate());
