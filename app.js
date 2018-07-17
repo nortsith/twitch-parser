@@ -7,6 +7,7 @@ const download = require('download-file');
 const { exec } = require('child_process');
 const notifier = require('node-notifier');
 const path = require('path');
+const ffmpeg = require('ffmpeg');
 
 app.get('/',function(req, res) {
   res.sendFile(__dirname + '/client/index.html');
@@ -19,41 +20,49 @@ console.log('Server Started');
 function TwitchParser () {
     const parser = this;
 
-    this.size = 2;
-    this.period = 'day',
-    this.completed = 0;
-    this.clipList = [];
-    this.options = {
+    parser.configuration = {
+        size: 5,
+        period: 'month',
+        language: 'en',
+        trending: true,
+        game: 'Fortnite'
+    };
+
+    parser.completed = 0;
+    parser.transcoded = 0;
+    parser.clipList = [];
+    parser.options = {
         directory: '',
         filename: ''
     };
 
-    this.initialize = () => {
-        this.registerApp();
-        this.getClips({
-            limit: this.size,
-            language: 'en',
-            period: this.period,
-            trending: false
+    parser.initialize = () => {
+        parser.registerApp();
+        parser.getClips({
+            limit: parser.configuration.size,
+            language: parser.configuration.language,
+            period: parser.configuration.period,
+            trending: parser.configuration.trending,
+            game: parser.configuration.game
         }, () => {
-            this.createFolder();
-            this.setDirectory('./videos/' + this.getFormattedDate());
+            parser.createFolder();
+            parser.setDirectory('./videos/' + parser.getFormattedDate());
         });
     };
 
-    this.registerApp = function () {
+    parser.registerApp = function () {
         exec('"' + __dirname + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" -install ' +
             '"%AppData%\\Microsoft\\Windows\\Start Menu\\Programs\\Twitch Parser.lnk" ' +
             '"' + __dirname + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" twitch-parser');
     };
 
-    this.getClips = (config, callback) => {
+    parser.getClips = (config, callback) => {
         twitch.clientID = 'th6nyhyb09o3rn71ozhhemx5se9lsp';
 
-        let title = this.size > 1 && (this.size + ' clips') || 'clip';
+        let title = parser.configuration.size > 1 && (parser.configuration.size + ' clips') || 'clip';
 
-        this.sendNotification({
-            title: 'Getting top ' + title + ' of the ' + this.period + '!',
+        parser.sendNotification({
+            title: 'Getting top ' + title + ' of the ' + parser.configuration.period + '!',
             message: 'This will take time depending on your download speed.',
             wait: false
         });
@@ -63,40 +72,108 @@ function TwitchParser () {
               console.log(error);
             } else {
                 callback();
+                console.log('Downloading...!');
 
                 result.clips.forEach((clip, index) => {
-                    this.setFileName(index.toString());
-                    this.clipList.push(this.options.filename);
-                    this.downloadClips(clip, index);
+                    parser.setFileName(index.toString());
+                    parser.clipList.push(parser.options.filename);
+                    parser.downloadClips(clip, index);
                 });
             }
         });
     };
 
-    this.downloadClips = (clip, index) => {
-        download(this.generateDownloadUrl(clip), this.options, (error) => {
-            this.completed += 1;
+    parser.downloadClips = (clip, index) => {
+        download(parser.generateDownloadUrl(clip), parser.options, (error) => {
+            parser.completed += 1;
 
-            if (this.completed === this.size) {
-                let title = this.size > 1 && (this.size + ' clips') || 'clip';
-                let be = this.size > 1 && ' are ' || ' is ';
-                this.sendNotification({
-                    title: 'Top ' + title + ' of the ' + this.period + be + 'ready!',
-                    message: 'Click to show in folder.',
+            parser.transcodeClip(index);
+
+            if (parser.completed === parser.configuration.size) {
+                console.log('Download complete!');
+                let title = parser.configuration.size > 1 && (parser.configuration.size + ' clips') || 'clip';
+                let be = parser.configuration.size > 1 && ' are ' || ' is ';
+
+                parser.sendNotification({
+                    title: 'Top ' + title + ' of the ' + parser.configuration.period + be + 'downloaded!',
+                    message: 'Generating final video. This will take a while.',
                     wait: true
-                }, () => {
-                    exec('start videos\\' + parser.getFormattedDate());
-                    setTimeout(() => {
-                        process.exit();
-                    }, 2000);
-                }, () => {
-                    process.exit();
                 });
             }
         });
     };
 
-    this.sendNotification = (config, onClick, timeout) => {
+    parser.transcodeClip = (index) => {
+        console.log('Transcoding ' + index + '.mp4');
+
+        var transcoder = exec('ffmpeg -i ' + __dirname + parser.options.directory + '/' + index +
+        '.mp4 -vf setdar=16/9 -video_track_timescale 60000 -ac 1 -ar 48000 -preset fast ' + index + '_tmp.mp4', {
+            cwd: './tmp'
+        });
+
+        transcoder.on('close', () => {
+            console.log('Transcoding ' + index + '.mp4 completed!');
+
+            exec('rm ' + index + '.mp4', {
+                cwd: parser.options.directory
+            });
+
+            parser.transcoded += 1;
+
+            if (parser.transcoded === parser.configuration.size) {
+                console.log('Transcode complete!');
+                parser.createList(parser.mergeClips);
+            }
+        });
+    };
+
+    parser.mergeClips = () => {
+        console.log('Merging...');
+
+        var merge = exec('ffmpeg -f concat -i mylist.txt -c copy ' + __dirname +
+            parser.options.directory + '/output.mp4 -y', {
+                cwd: './tmp'
+            }
+        );
+
+        merge.on('close', () => {
+            console.log('Merge complete!');
+
+            exec('rm *.mp4', {
+                cwd: './tmp'
+            });
+
+            exec('rm *.txt', {
+                cwd: './tmp'
+            });
+
+            parser.sendNotification({
+                title: 'Completed!',
+                message: 'Final video is generated. Click to open folder.',
+                wait: true
+            }, () => {
+                exec('start videos\\' + parser.getFormattedDate());
+
+                setTimeout(() => {
+                    process.exit();
+                }, 2000)
+            }, () => {
+                process.exit();
+            });
+        });
+    };
+
+    parser.createList = (callback) => {
+        var list = exec('(for %i in (*.mp4) do @echo file \'%i\' & @echo file \'misc/seperator.mp4\') > mylist.txt', {
+            cwd: './tmp'
+        });
+
+        list.on('close', () => {
+            callback();
+        });
+    };
+
+    parser.sendNotification = (config, onClick, timeout) => {
         notifier.notify({
             title: config.title,
             message: config.message,
@@ -119,7 +196,7 @@ function TwitchParser () {
         };
     };
 
-    this.generateDownloadUrl = (clip) => {
+    parser.generateDownloadUrl = (clip) => {
         var videoUrl = 'https://clips-media-assets2.twitch.tv/';
         var videoId = clip.thumbnails.medium.split('tv/').pop().split('-preview').shift();
         var generatedUrl = videoUrl + videoId + '.mp4';
@@ -127,28 +204,28 @@ function TwitchParser () {
         return generatedUrl;
     };
 
-    this.getFormattedDate = () => {
+    parser.getFormattedDate = () => {
         var date = new Date();
         return date.getDate() + '-' + (date.getMonth() + 1) + '-' + date.getFullYear();
     };
 
-    this.createFolder = () => {
-        exec('mkdir /videos' + this.getFormattedDate());
+    parser.createFolder = () => {
+        exec('mkdir /videos' + parser.getFormattedDate());
     };
 
-    this.setDirectory = (path) => {
-        this.options.directory = path;
+    parser.setDirectory = (path) => {
+        parser.options.directory = path;
     };
 
-    this.setFileName = (name) => {
-        this.options.filename = this.generateFileName(name);
+    parser.setFileName = (name) => {
+        parser.options.filename = parser.generateFileName(name);
     };
 
-    this.generateFileName = (name) => {
+    parser.generateFileName = (name) => {
         return name.split(' ').join('_') + '.mp4';
     };
 
-    this.initialize();
+    parser.initialize();
 };
 
 var twitchParser = new TwitchParser;
