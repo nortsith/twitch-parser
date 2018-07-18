@@ -21,11 +21,11 @@ function TwitchParser () {
     const parser = this;
 
     parser.configuration = {
-        size: 5,
-        period: 'month',
+        size: 50,
+        period: 'week',
         language: 'en',
         trending: true,
-        game: 'Fortnite'
+        game: ''
     };
 
     parser.completed = 0;
@@ -72,11 +72,12 @@ function TwitchParser () {
               console.log(error);
             } else {
                 callback();
-                console.log('Downloading...!');
+                console.log('Downloading...');
+
 
                 result.clips.forEach((clip, index) => {
+                    parser.clipList.push(clip);
                     parser.setFileName(index.toString());
-                    parser.clipList.push(parser.options.filename);
                     parser.downloadClips(clip, index);
                 });
             }
@@ -86,8 +87,6 @@ function TwitchParser () {
     parser.downloadClips = (clip, index) => {
         download(parser.generateDownloadUrl(clip), parser.options, (error) => {
             parser.completed += 1;
-
-            parser.transcodeClip(index);
 
             if (parser.completed === parser.configuration.size) {
                 console.log('Download complete!');
@@ -99,15 +98,21 @@ function TwitchParser () {
                     message: 'Generating final video. This will take a while.',
                     wait: true
                 });
+
+                parser.transcodeClip(parser.transcoded);
             }
         });
     };
 
     parser.transcodeClip = (index) => {
-        console.log('Transcoding ' + index + '.mp4');
+        console.log('Transcoding ' + parser.transcoded + '.mp4...');
 
-        var transcoder = exec('ffmpeg -i ' + __dirname + parser.options.directory + '/' + index +
-        '.mp4 -vf setdar=16/9 -video_track_timescale 60000 -ac 1 -ar 48000 -preset fast ' + index + '_tmp.mp4', {
+        var transcoder = exec('ffmpeg -i ' + __dirname + parser.options.directory + '/' + parser.transcoded +
+            '.mp4 -vf setdar=16/9 -video_track_timescale 60000 -ac 1 -ar 48000 -preset ultrafast ' +
+            '-vf drawtext="fontfile=misc/segoeuil.ttf: text=\'twitch.tv/' + parser.clipList[index].broadcaster.name +
+            '\': fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=20" ' +
+            + parser.transcoded +
+            '_tmp.mp4 -y', {
             cwd: './tmp'
         });
 
@@ -120,8 +125,12 @@ function TwitchParser () {
 
             parser.transcoded += 1;
 
+            if (parser.transcoded < parser.configuration.size) {
+                parser.transcodeClip(parser.transcoded);
+            }
+
             if (parser.transcoded === parser.configuration.size) {
-                console.log('Transcode complete!');
+                console.log('Transcode completed!');
                 parser.createList(parser.mergeClips);
             }
         });
@@ -137,7 +146,7 @@ function TwitchParser () {
         );
 
         merge.on('close', () => {
-            console.log('Merge complete!');
+            console.log('Merge completed!');
 
             exec('rm *.mp4', {
                 cwd: './tmp'
