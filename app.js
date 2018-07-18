@@ -21,9 +21,9 @@ function TwitchParser () {
     const parser = this;
 
     parser.configuration = {
-        size: 50,
+        size: 5,
         period: 'week',
-        language: 'en',
+        language: '',
         trending: true,
         game: ''
     };
@@ -109,8 +109,10 @@ function TwitchParser () {
 
         var transcoder = exec('ffmpeg -i ' + __dirname + parser.options.directory + '/' + parser.transcoded +
             '.mp4 -vf setdar=16/9 -video_track_timescale 60000 -ac 1 -ar 48000 -preset ultrafast ' +
-            '-vf drawtext="fontfile=misc/segoeuil.ttf: text=\'twitch.tv/' + parser.clipList[index].broadcaster.name +
-            '\': fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=20" ' +
+            '-vf "[in]drawtext=fontfile=misc/segoeuil.ttf: text=\'twitch.tv/' + parser.clipList[index].broadcaster.name +
+            '\': fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=40,' +
+            'drawtext=fontfile=misc/segoeuil.ttf: text=' + parser.clipList[index].game.toLowerCase() +
+            '\': fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=100" ' +
             + parser.transcoded +
             '_tmp.mp4 -y', {
             cwd: './tmp'
