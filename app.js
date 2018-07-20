@@ -21,10 +21,10 @@ function TwitchParser () {
     const parser = this;
 
     parser.configuration = {
-        size: 5,
-        period: 'week',
-        language: '',
-        trending: true,
+        size: 40,
+        period: 'day',
+        language: 'en',
+        trending: false,
         game: ''
     };
 
@@ -69,11 +69,10 @@ function TwitchParser () {
 
         twitch.clips.top(config, (error, result) => {
             if (error) {
-              console.log(error);
+              parser.log(err);
             } else {
                 callback();
-                console.log('Downloading...');
-
+                parser.log('Downloading...');
 
                 result.clips.forEach((clip, index) => {
                     parser.clipList.push(clip);
@@ -89,7 +88,8 @@ function TwitchParser () {
             parser.completed += 1;
 
             if (parser.completed === parser.configuration.size) {
-                console.log('Download complete!');
+                parser.log('Download complete!');
+
                 let title = parser.configuration.size > 1 && (parser.configuration.size + ' clips') || 'clip';
                 let be = parser.configuration.size > 1 && ' are ' || ' is ';
 
@@ -105,13 +105,13 @@ function TwitchParser () {
     };
 
     parser.transcodeClip = (index) => {
-        console.log('Transcoding ' + parser.transcoded + '.mp4...');
+        parser.log('Transcoding ' + parser.transcoded + '.mp4...');
 
         var transcoder = exec('ffmpeg -i ' + __dirname + parser.options.directory + '/' + parser.transcoded +
             '.mp4 -vf setdar=16/9 -video_track_timescale 60000 -ac 1 -ar 48000 -preset ultrafast ' +
             '-vf "[in]drawtext=fontfile=misc/segoeuil.ttf: text=\'twitch.tv/' + parser.clipList[index].broadcaster.name +
             '\': fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=40,' +
-            'drawtext=fontfile=misc/segoeuil.ttf: text=' + parser.clipList[index].game.toLowerCase() +
+            'drawtext=fontfile=misc/segoeuil.ttf: text=' + parser.clipList[index].game.replace(':', '') +
             '\': fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=100" ' +
             + parser.transcoded +
             '_tmp.mp4 -y', {
@@ -119,7 +119,7 @@ function TwitchParser () {
         });
 
         transcoder.on('close', () => {
-            console.log('Transcoding ' + index + '.mp4 completed!');
+            parser.log('Transcoding ' + index + '.mp4 completed!');
 
             exec('rm ' + index + '.mp4', {
                 cwd: parser.options.directory
@@ -132,14 +132,14 @@ function TwitchParser () {
             }
 
             if (parser.transcoded === parser.configuration.size) {
-                console.log('Transcode completed!');
+                parser.log('Transcode completed!');
                 parser.createList(parser.mergeClips);
             }
         });
     };
 
     parser.mergeClips = () => {
-        console.log('Merging...');
+        parser.log('Merging...');
 
         var merge = exec('ffmpeg -f concat -i mylist.txt -c copy ' + __dirname +
             parser.options.directory + '/output.mp4 -y', {
@@ -148,7 +148,7 @@ function TwitchParser () {
         );
 
         merge.on('close', () => {
-            console.log('Merge completed!');
+            parser.log('Merge completed!');
 
             exec('rm *.mp4', {
                 cwd: './tmp'
@@ -234,6 +234,11 @@ function TwitchParser () {
 
     parser.generateFileName = (name) => {
         return name.split(' ').join('_') + '.mp4';
+    };
+
+    parser.log = (message) => {
+        console.clear();
+        console.log(message);
     };
 
     parser.initialize();
