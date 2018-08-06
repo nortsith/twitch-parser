@@ -23,13 +23,14 @@ function TwitchParser() {
 	const parser = this;
 
 	parser.configuration = {
-		size: 10,
+		size: 40,
 		period: 'day',
 		language: 'en',
 		trending: false,
 		game: ''
 	};
 
+	parser.elapsedTime = 0;
 	parser.completed = 0;
 	parser.transcoded = 0;
 	parser.clipList = [];
@@ -154,6 +155,9 @@ function TwitchParser() {
 		merge.on('close', () => {
 			parser.log('Merge completed!');
 
+			console.log('Elapsed time', (parser.elapsedTime / 60).toFixed(0) + ':' +
+				(parser.elapsedTime % 60).toFixed(0) + ' minutes.');
+
 			exec('rm *.mp4', {
 				cwd: './tmp'
 			});
@@ -251,6 +255,10 @@ function TwitchParser() {
 		console.clear();
 		console.log(message);
 	};
+
+	parser.timer = setInterval(() => {
+		parser.elapsedTime++
+	}, 1000);
 
 	parser.initialize();
 };
