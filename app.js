@@ -23,9 +23,9 @@ function TwitchParser() {
 	const parser = this;
 
 	parser.configuration = {
-		size: 2,
+		size: 5,
 		period: 'day',
-		language: 'en',
+		language: 'tr',
 		trending: false,
 		game: ''
 	};
@@ -232,6 +232,10 @@ function TwitchParser() {
 			});
 
 			list.on('close', () => {
+				exec('@echo file \'misc/outro.mp4\' >> mylist.txt', {
+					cwd: './tmp'
+				});
+
 				callback();
 			});
 		});
