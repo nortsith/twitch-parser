@@ -11,10 +11,14 @@ const notifier = require('node-notifier');
 const path = require('path');
 const ffmpeg = require('ffmpeg');
 
+const projectRoot = path.resolve(__dirname, '..');
+const clientRoot = path.join(projectRoot, './client/');
+const sourceRoot = path.resolve(__dirname);
+
 app.get('/', function (req, res) {
-	res.sendFile(__dirname + '/client/index.html');
+	res.sendFile(path.join(clientRoot, './index.html'));
 });
-app.use('/client', express.static(__dirname + '/client'));
+app.use('/client', express.static(clientRoot));
 
 serv.listen(process.env.PORT || 2000);
 console.log('Server Started');
@@ -57,9 +61,9 @@ function TwitchParser() {
 	};
 
 	parser.registerApp = function () {
-		exec('"' + __dirname + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" -install ' +
+		exec('"' + projectRoot + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" -install ' +
 			'"%AppData%\\Microsoft\\Windows\\Start Menu\\Programs\\Twitch Parser.lnk" ' +
-			'"' + __dirname + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" twitch-parser');
+			'"' + projectRoot + '\\node_modules\\node-notifier\\vendor\\snoreToast\\SnoreToast.exe" twitch-parser');
 	};
 
 	parser.getClips = (config, callback) => {
@@ -113,7 +117,7 @@ function TwitchParser() {
 	parser.transcodeClip = (index) => {
 		parser.log('Transcoding ' + parser.transcoded + '.mp4...');
 
-		var transcoder = exec('ffmpeg -i ' + __dirname + parser.options.directory + '/' + parser.transcoded +
+		var transcoder = exec('ffmpeg -i ' + projectRoot + parser.options.directory + '/' + parser.transcoded +
 			'.mp4 -vf setdar=16/9 -video_track_timescale 60000 -ac 1 -ar 48000 -preset ultrafast ' +
 			// '-vf "[in]drawtext=fontfile=misc/segoeuil.ttf: text=\'twitch.tv/' + parser.clipList[index].broadcaster.name +
 			// '\': fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=40,' +
@@ -147,7 +151,7 @@ function TwitchParser() {
 	parser.mergeClips = () => {
 		parser.log('Merging...');
 
-		var merge = exec('ffmpeg -f concat -i mylist.txt -c copy ' + __dirname +
+		var merge = exec('ffmpeg -f concat -i mylist.txt -c copy ' + projectRoot +
 			parser.options.directory + '/output.mp4 -y', {
 				cwd: './tmp'
 			}
@@ -246,7 +250,7 @@ function TwitchParser() {
 		notifier.notify({
 			title: config.title,
 			message: config.message,
-			icon: path.join(__dirname, 'icon.ico'),
+			icon: path.join(sourceRoot, 'icon.ico'),
 			sound: false,
 			appID: 'twitch-parser',
 			wait: config.wait
