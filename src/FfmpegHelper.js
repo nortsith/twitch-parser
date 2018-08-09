@@ -1,7 +1,6 @@
 // @flow
 
 import child_process from 'child_process';
-// $FlowFixMe
 import fse from 'fs-extra';
 
 export default class FfmpegHelper {

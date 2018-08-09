@@ -1,6 +1,5 @@
 // @flow
 
-// $FlowFixMe
 import notifier from 'node-notifier';
 
 type Config = {

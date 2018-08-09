@@ -3,11 +3,8 @@
 import os from 'os';
 import child_process from 'child_process';
 import path from 'path';
-// $FlowFixMe
 import fse from 'fs-extra';
-// $FlowFixMe
 import opn from 'opn';
-// $FlowFixMe
 import Bluebird from 'bluebird';
 
 import FfmpegHelper from './FfmpegHelper';

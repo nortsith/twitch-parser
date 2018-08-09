@@ -1,7 +1,6 @@
 // @flow
 
-// $FlowFixMe
-const twitch = require('twitch-api-v5');
+import twitch from 'twitch-api-v5';
 
 export type TwitchClip = $ReadOnly<{|
   id: string,
