@@ -8,7 +8,7 @@ import fse from 'fs-extra';
 // $FlowFixMe
 import opn from 'opn';
 // $FlowFixMe
-import mapLimit from 'async/mapLimit';
+import Bluebird from 'bluebird';
 
 import FfmpegHelper from './FfmpegHelper';
 import Notifier from './Notifier';
@@ -71,42 +71,34 @@ async function main() {
 
   await fse.ensureDir(tempRoot);
 
-  const transcodedVideos = await new Promise((resolve, reject) =>
-    mapLimit(
-      clips,
-      5,
-      async (clip, index) => {
-        // Download
-        console.log(`Downloading ${clip.id}...`);
+  const transcodedVideos = await Bluebird.map(
+    clips,
+    async (clip, index) => {
+      // Download
+      console.log(`Downloading ${clip.id}...`);
 
-        const url = getTwitchClipVideoUrl(clip);
-        const downloadPath = path.join(downloadDirectory, `./${clip.id}.mp4`);
-        if (!(await fse.exists(downloadPath))) {
-          await downloadFile(url, downloadPath);
-        }
+      const url = getTwitchClipVideoUrl(clip);
+      const downloadPath = path.join(downloadDirectory, `./${clip.id}.mp4`);
+      if (!(await fse.exists(downloadPath))) {
+        await downloadFile(url, downloadPath);
+      }
 
-        // Transcode
-        console.log(`Transcoding ${clip.id}...`);
+      // Transcode
+      console.log(`Transcoding ${clip.id}...`);
 
-        const outputPath = path.join(tempRoot, `./${clip.id}_transcoded.mp4`);
-        if (!(await fse.exists(outputPath))) {
-          await ffmpegHelper.transcodeVideo(downloadPath, outputPath);
-        }
+      const outputPath = path.join(tempRoot, `./${clip.id}_transcoded.mp4`);
+      if (!(await fse.exists(outputPath))) {
+        await ffmpegHelper.transcodeVideo(downloadPath, outputPath);
+      }
 
-        return {
-          clip,
-          path: outputPath,
-        };
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        resolve(result);
-      },
-    ),
+      return {
+        clip,
+        path: outputPath,
+      };
+    },
+    {
+      concurrency: 5,
+    },
   );
 
   console.log('Download and transcode complete!');
