@@ -37,6 +37,7 @@
     "prettier": "^1.14.2"
   },
   "dependencies": {
+    "async": "^2.6.1",
     "download-file": "^0.1.5",
     "fs-extra": "^7.0.0",
     "node-notifier": "^5.2.1",

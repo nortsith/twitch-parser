@@ -7,6 +7,8 @@ import path from 'path';
 import fse from 'fs-extra';
 // $FlowFixMe
 import opn from 'opn';
+// $FlowFixMe
+import mapLimit from 'async/mapLimit';
 
 import FfmpegHelper from './FfmpegHelper';
 import Notifier from './Notifier';
@@ -69,30 +71,42 @@ async function main() {
 
   await fse.ensureDir(tempRoot);
 
-  const transcodedVideos = await Promise.all(
-    clips.map(async (clip, index) => {
-      // Download
-      console.log(`Downloading ${clip.id}...`);
+  const transcodedVideos = await new Promise((resolve, reject) =>
+    mapLimit(
+      clips,
+      5,
+      async (clip, index) => {
+        // Download
+        console.log(`Downloading ${clip.id}...`);
 
-      const url = getTwitchClipVideoUrl(clip);
-      const downloadPath = path.join(downloadDirectory, `./${clip.id}.mp4`);
-      if (!(await fse.exists(downloadPath))) {
-        await downloadFile(url, downloadPath);
-      }
+        const url = getTwitchClipVideoUrl(clip);
+        const downloadPath = path.join(downloadDirectory, `./${clip.id}.mp4`);
+        if (!(await fse.exists(downloadPath))) {
+          await downloadFile(url, downloadPath);
+        }
 
-      // Transcode
-      console.log(`Transcoding ${clip.id}...`);
+        // Transcode
+        console.log(`Transcoding ${clip.id}...`);
 
-      const outputPath = path.join(tempRoot, `./${clip.id}_transcoded.mp4`);
-      if (!(await fse.exists(outputPath))) {
-        await ffmpegHelper.transcodeVideo(downloadPath, outputPath);
-      }
+        const outputPath = path.join(tempRoot, `./${clip.id}_transcoded.mp4`);
+        if (!(await fse.exists(outputPath))) {
+          await ffmpegHelper.transcodeVideo(downloadPath, outputPath);
+        }
 
-      return {
-        clip,
-        path: outputPath,
-      };
-    }),
+        return {
+          clip,
+          path: outputPath,
+        };
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(result);
+      },
+    ),
   );
 
   console.log('Download and transcode complete!');
