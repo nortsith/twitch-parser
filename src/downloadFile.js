@@ -4,7 +4,7 @@ import path from 'path';
 // $FlowFixMe
 import download from 'download-file';
 
-export default function downloadFile(url: string, outputPath: string): Promise < void > {
+export default function downloadFile(url: string, outputPath: string): Promise<void> {
 	const {
 		dir,
 		base

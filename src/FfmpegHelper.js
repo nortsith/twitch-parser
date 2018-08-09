@@ -11,7 +11,7 @@ export default class FfmpegHelper {
 		this.command = command;
 	}
 
-	async transcodeVideo(inputPath: string, outputPath: string): Promise < void > {
+	async transcodeVideo(inputPath: string, outputPath: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			child_process.exec(
 				this.command +
@@ -37,10 +37,10 @@ export default class FfmpegHelper {
 	}
 
 	async concatVideos(
-		videoPaths: Array < string > ,
+		videoPaths: Array<string>,
 		outputPath: string,
 		tempListPath: string,
-	): Promise < void > {
+	): Promise<void> {
 		const listPath = tempListPath;
 
 		await fse.writeFile(listPath, videoPaths.map((f) => `file '${f}'`).join('\n'));

@@ -11,9 +11,9 @@ type Config = {
 type NotificationOptions = {
 	title: string,
 	message: string,
-	wait ? : boolean,
-	onClick ? : () => mixed,
-	onTimeout ? : () => mixed,
+	wait?: boolean,
+	onClick?: () => mixed,
+	onTimeout?: () => mixed,
 };
 
 export default class Notifier {
