@@ -1,5 +1,10 @@
 {
   "editor.formatOnSave": true,
   "typescript.validate.enable": false,
-  "javascript.validate.enable": false
+  "javascript.validate.enable": false,
+  "eslint.options": {
+    "rules": {
+      "prettier/prettier": 0
+    }
+  }
 }

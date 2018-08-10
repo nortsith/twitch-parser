@@ -11,7 +11,7 @@ export default function getTwitchClipVideoUrl(clip: TwitchClip): string {
     .split('-preview')
     .shift();
 
-  const videoUrl = baseUrl + videoId + '.mp4';
+  const videoUrl = `${baseUrl + videoId}.mp4`;
 
   return videoUrl;
 }

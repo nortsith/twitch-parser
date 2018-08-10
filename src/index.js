@@ -1,7 +1,6 @@
 // @flow
 
 import os from 'os';
-import child_process from 'child_process';
 import path from 'path';
 import fse from 'fs-extra';
 import opn from 'opn';
@@ -13,14 +12,14 @@ import downloadFile from './downloadFile';
 import getClips from './getClips';
 import getTwitchClipVideoUrl from './getTwitchClipVideoUrl';
 
-const projectRoot = path.resolve(__dirname, '..') + '/';
-const dataRoot = path.resolve(projectRoot, './data/') + '/';
-const tempRoot = path.resolve(projectRoot, './tmp/') + '/';
-const sourceRoot = path.resolve(__dirname) + '/';
+const projectRoot = `${path.resolve(__dirname, '..')}/`;
+const dataRoot = `${path.resolve(projectRoot, './data/')}/`;
+const tempRoot = `${path.resolve(projectRoot, './tmp/')}/`;
+const sourceRoot = `${path.resolve(__dirname)}/`;
 
 function getFormattedDate() {
   const date = new Date();
-  return date.getDate() + '-' + (date.getMonth() + 1) + '-' + date.getFullYear();
+  return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
 }
 
 async function main() {
@@ -41,10 +40,10 @@ async function main() {
     game: '',
   };
 
-  let title = (configuration.size > 1 && configuration.size + ' clips') || 'clip';
+  const title = (configuration.size > 1 && `${configuration.size} clips`) || 'clip';
 
   notifier.notify({
-    title: 'Getting top ' + title + ' of the ' + configuration.period + '!',
+    title: `Getting top ${title} of the ${configuration.period}!`,
     message: 'This will take time depending on your download speed.',
     wait: false,
   });
@@ -71,7 +70,7 @@ async function main() {
 
   const transcodedVideos = await Bluebird.map(
     clips,
-    async (clip, index) => {
+    async (clip) => {
       // Download
       console.log(`Downloading ${clip.id}...`);
 
@@ -101,10 +100,10 @@ async function main() {
 
   console.log('Download and transcode complete!');
 
-  let be = (configuration.size > 1 && ' are ') || ' is ';
+  const be = (configuration.size > 1 && ' are ') || ' is ';
 
   notifier.notify({
-    title: 'Top ' + title + ' of the ' + configuration.period + be + 'downloaded!',
+    title: `Top ${title} of the ${configuration.period}${be}downloaded!`,
     message: 'Generating final video. This will take a while.',
     wait: true,
   });
