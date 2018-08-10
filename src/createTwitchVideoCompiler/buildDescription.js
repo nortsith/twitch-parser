@@ -31,5 +31,8 @@ ${clips
 | Game: ${clip.game}
 | Streamer: ${clip.broadcaster.channel_url}`,
     )
-    .join('\n')}`;
+    .join('\n')}
+
+--Tags--
+${clips.map((clip) => `${clip.game}, ${clip.broadcaster.name}`).join(',\n')}`;
 }
