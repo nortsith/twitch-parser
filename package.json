@@ -18,7 +18,7 @@
     "url": "git+https://github.com/onurssx9/twitch-parser.git"
   },
   "author": "Onur Sahin Senturk",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/onurssx9/twitch-parser/issues"
   },
