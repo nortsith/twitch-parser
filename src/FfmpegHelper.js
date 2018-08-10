@@ -47,26 +47,23 @@ export default class FfmpegHelper {
     return promiseFromChildProcess(ffmpeg);
   }
 
-  async concatVideos(
-    videoPaths: Array<string>,
-    outputPath: string,
-    tempListPath: string,
-  ): Promise<void> {
-    const listPath = tempListPath;
-
-    await fse.writeFile(listPath, videoPaths.map((f) => `file '${f}'`).join('\n'));
-
+  async concatVideos(videoPaths: Array<string>, outputPath: string): Promise<void> {
     const ffmpeg = this.spawn(
       // prettier-ignore
       [
         '-f', 'concat',
         '-safe', '0',
-        '-i', listPath,
+        '-protocol_whitelist', 'pipe,file',
+        '-i', '-',
         '-c', 'copy',
         outputPath,
         '-y'
       ],
     );
+
+    const list = videoPaths.map((f) => `file '${f}'`).join('\n');
+    ffmpeg.stdin.write(list);
+    ffmpeg.stdin.end();
 
     return promiseFromChildProcess(ffmpeg);
   }
