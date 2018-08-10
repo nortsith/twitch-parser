@@ -125,7 +125,7 @@ async function main() {
 
   console.log('Merging...');
 
-  await ffmpegHelper.concatVideos(files, outputPath, path.join(projectRoot, './tmp/mylist.txt'));
+  await ffmpegHelper.concatVideos(files, outputPath);
 
   console.log('Done!');
 
