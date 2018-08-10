@@ -12,6 +12,7 @@ import downloadFile from './downloadFile';
 import getClips from './getClips';
 import getTwitchClipVideoUrl from './getTwitchClipVideoUrl';
 import buildDescription from './buildDescription';
+import getConfiguration from './getConfiguration';
 
 const projectRoot = `${path.resolve(__dirname, '..')}/`;
 const dataRoot = `${path.resolve(projectRoot, './data/')}/`;
@@ -33,13 +34,7 @@ async function main() {
     iconPath: path.join(sourceRoot, 'icon.ico'),
   });
 
-  const configuration = {
-    size: 5,
-    period: 'day',
-    language: 'tr',
-    trending: false,
-    game: '',
-  };
+  const configuration = await getConfiguration();
 
   const startTime = Date.now();
 
