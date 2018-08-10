@@ -123,7 +123,7 @@ export default function createTwitchVideoCompiler(
     await ffmpegHelper.concatVideos(files, outputPath);
 
     // Write Description
-    const elapsedTime = Date.now() - startTime;
+    const elapsedTime = (Date.now() - startTime) / 1000;
     const description = buildDescription(configuration, clips, elapsedTime);
     const descriptionPath = path.join(outputDirectory, './description.txt');
 
