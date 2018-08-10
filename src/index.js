@@ -11,6 +11,7 @@ import Notifier from './Notifier';
 import downloadFile from './downloadFile';
 import getClips from './getClips';
 import getTwitchClipVideoUrl from './getTwitchClipVideoUrl';
+import buildDescription from './buildDescription';
 
 const projectRoot = `${path.resolve(__dirname, '..')}/`;
 const dataRoot = `${path.resolve(projectRoot, './data/')}/`;
@@ -39,6 +40,8 @@ async function main() {
     trending: false,
     game: '',
   };
+
+  const startTime = Date.now();
 
   const title = (configuration.size > 1 && `${configuration.size} clips`) || 'clip';
 
@@ -125,6 +128,13 @@ async function main() {
   console.log('Merging...');
 
   await ffmpegHelper.concatVideos(files, outputPath);
+
+  // Write Description
+  const elapsedTime = Date.now() - startTime;
+  const description = buildDescription(configuration, clips, elapsedTime);
+  const descriptionPath = path.join(downloadDirectory, './description.txt');
+
+  await fse.writeFile(descriptionPath, description);
 
   console.log('Done!');
 
