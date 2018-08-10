@@ -1,7 +1,7 @@
 {
-  "editor.formatOnSave": true,
-  "typescript.validate.enable": false,
+  "flow.useNPMPackagedFlow": true,
   "javascript.validate.enable": false,
+  "editor.formatOnSave": true,
   "eslint.options": {
     "rules": {
       "prettier/prettier": 0
