@@ -66,6 +66,7 @@ async function main() {
 
   console.log('Downloading and transcoding...');
 
+  await fse.ensureDir(downloadDirectory);
   await fse.ensureDir(tempRoot);
 
   const transcodedVideos = await Bluebird.map(

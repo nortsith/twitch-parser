@@ -1397,12 +1397,6 @@ domexception@^1.0.1:
   dependencies:
     webidl-conversions "^4.0.2"
 
-download-file@^0.1.5:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/download-file/-/download-file-0.1.5.tgz#ca50ba64d9094b0c8702ef9fff92d2189e141117"
-  dependencies:
-    mkdirp "^0.5.0"
-
 duplexer2@~0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/duplexer2/-/duplexer2-0.1.4.tgz#8b12dab878c0d69e3e7891051662a32fc6bddcc1"
@@ -3050,7 +3044,7 @@ nice-try@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.4.tgz#d93962f6c52f2c1558c0fbda6d512819f1efe1c4"
 
-node-fetch@^2.1.1:
+node-fetch@^2.1.1, node-fetch@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.2.0.tgz#4ee79bde909262f9775f731e3656d0db55ced5b5"
 
