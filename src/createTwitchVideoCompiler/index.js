@@ -17,6 +17,7 @@ type Configuration = {
   language: string,
   trending: boolean,
   game: string,
+  channel: string,
   ffmpegCommand: string,
   introVideoPath: string,
   separatorVideoPath: string,
@@ -65,6 +66,7 @@ export default function createTwitchVideoCompiler(
       period: configuration.period,
       trending: configuration.trending,
       game: configuration.game,
+      channel: configuration.channel,
     });
 
     eventManager.send({ name: 'preparingVideos' });

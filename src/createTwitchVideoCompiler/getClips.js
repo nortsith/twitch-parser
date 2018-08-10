@@ -43,6 +43,7 @@ type Config = {
   period: 'day',
   trending: boolean,
   game: string,
+  channel: string,
 };
 
 export default async function getClips(config: Config): Promise<Array<TwitchClip>> {

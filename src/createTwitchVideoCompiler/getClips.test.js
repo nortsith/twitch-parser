@@ -9,6 +9,7 @@ test('getClips', async () => {
     period: 'day',
     trending: false,
     game: '',
+    channel: '',
   };
   const urls = await getClips(config);
 

@@ -16,6 +16,7 @@ export default async function getConfiguration() {
 
         return true;
       },
+      default: '5',
     },
     {
       message: 'Please select a period.',
@@ -32,6 +33,16 @@ export default async function getConfiguration() {
       message: 'Do you want to get trending clips?',
       type: 'confirm',
       name: 'trending',
+    },
+    {
+      message: 'Please specify a game. (optional)',
+      type: 'input',
+      name: 'game',
+    },
+    {
+      message: 'Please specify a channel. (optional)',
+      type: 'input',
+      name: 'channel',
     },
   ];
 
