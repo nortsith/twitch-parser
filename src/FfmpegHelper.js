@@ -1,14 +1,15 @@
 // @flow
 
-import child_process, { type ChildProcess } from 'child_process';
-import fse from 'fs-extra';
+import childProcess, { type ChildProcess } from 'child_process';
 
-function promiseFromChildProcess(childProcess: ChildProcess): Promise<void> {
+type SpawnOptions = child_process$spawnOpts; // eslint-disable-line camelcase
+
+function promiseFromChildProcess(child: ChildProcess): Promise<void> {
   return new Promise((resolve, reject) => {
-    childProcess.on('error', (error) => {
+    child.on('error', (error) => {
       reject(error);
     });
-    childProcess.on('exit', (code) => {
+    child.on('exit', (code) => {
       if (code !== 0) {
         reject(new Error(`Process exited with "${code}"`));
       }
@@ -25,8 +26,8 @@ export default class FfmpegHelper {
     this.command = command;
   }
 
-  spawn(args: Array<string>, options?: child_process$spawnOpts): ChildProcess {
-    return child_process.spawn(this.command, args, options);
+  spawn(args: Array<string>, options?: SpawnOptions): ChildProcess {
+    return childProcess.spawn(this.command, args, options);
   }
 
   async transcodeVideo(inputPath: string, outputPath: string): Promise<void> {
