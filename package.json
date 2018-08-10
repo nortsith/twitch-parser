@@ -7,7 +7,6 @@
     "test": "run-p test:*",
     "test:jest": "jest",
     "test:eslint": "eslint \"*.js\" \"src/**/*.js\"",
-    "test:prettier": "prettier --list-different \"**/*.js\"",
     "test:flow": "flow check",
     "update-type-defs": "flow-typed install -s"
   },
