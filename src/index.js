@@ -25,8 +25,8 @@ async function main() {
     projectRoot,
     './videos',
     getFormattedDate(),
-    `${Object.entries(configuration)
-      .map(([key, value]) => value) // eslint-disable-line no-unused-vars
+    `${Object.values(configuration)
+      .map((value) => value)
       .join('_')
       .replace(/__/g, '_')}`,
   );
