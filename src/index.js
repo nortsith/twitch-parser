@@ -47,6 +47,10 @@ async function main() {
     separatorVideoPath: path.join(dataRoot, './seperator.mp4'),
     outroVideoPath: path.join(dataRoot, './outro.mp4'),
     clipsDownloadPath: path.join(outputDirectory, './clips'),
+    fontPath: path
+      .join(dataRoot, './font.ttf')
+      .replace(/\\/g, '/')
+      .replace('C:', ''),
     tempDirectory: tempRoot,
     outputDirectory,
   });
