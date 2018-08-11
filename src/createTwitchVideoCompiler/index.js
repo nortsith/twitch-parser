@@ -22,6 +22,7 @@ type Configuration = {
   introVideoPath: string,
   separatorVideoPath: string,
   outroVideoPath: string,
+  clipsDownloadPath: string,
   tempDirectory: string,
   outputDirectory: string,
 };
@@ -50,6 +51,7 @@ export default function createTwitchVideoCompiler(
       introVideoPath,
       separatorVideoPath,
       outroVideoPath,
+      clipsDownloadPath,
       tempDirectory,
     } = configuration;
 
@@ -72,6 +74,7 @@ export default function createTwitchVideoCompiler(
     eventManager.send({ name: 'preparingVideos' });
 
     await fse.ensureDir(outputDirectory);
+    await fse.ensureDir(clipsDownloadPath);
     await fse.ensureDir(tempDirectory);
 
     const transcodedVideos = await Bluebird.map(
@@ -81,7 +84,7 @@ export default function createTwitchVideoCompiler(
         eventManager.send({ name: 'downloadingClip', clip });
 
         const url = getTwitchClipVideoUrl(clip);
-        const downloadPath = path.join(outputDirectory, `./${clip.id}.mp4`);
+        const downloadPath = path.join(outputDirectory, `./clips/${clip.id}.mp4`);
         if (!(await fse.exists(downloadPath))) {
           await downloadFile(url, downloadPath);
         }

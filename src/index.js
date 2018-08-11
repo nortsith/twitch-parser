@@ -25,7 +25,10 @@ async function main() {
     projectRoot,
     './videos',
     getFormattedDate(),
-    `output_${configuration.size}_${configuration.period}_${configuration.language}`,
+    `${Object.entries(configuration)
+      .map(([key, value]) => value) // eslint-disable-line no-unused-vars
+      .join('_')
+      .replace(/__/g, '_')}`,
   );
 
   const notifier = new Notifier({
@@ -40,6 +43,7 @@ async function main() {
     introVideoPath: path.join(dataRoot, './intro.mp4'),
     separatorVideoPath: path.join(dataRoot, './seperator.mp4'),
     outroVideoPath: path.join(dataRoot, './outro.mp4'),
+    clipsDownloadPath: path.join(outputDirectory, './clips'),
     tempDirectory: tempRoot,
     outputDirectory,
   });
