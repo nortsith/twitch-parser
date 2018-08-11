@@ -21,11 +21,17 @@ function getFormattedDate() {
 async function main() {
   const configuration = await getConfiguration();
 
+  const configurationKeys = ['size', 'period', 'language', 'trending', 'channel'];
+
   const outputDirectory = path.join(
     projectRoot,
     './videos',
     getFormattedDate(),
-    `output_${configuration.size}_${configuration.period}_${configuration.language}`,
+    `${Object.entries(configuration)
+      .filter(([key, value]) => Boolean(value) && configurationKeys.includes(key))
+      .sort(([keyA], [keyB]) => configurationKeys.indexOf(keyA) - configurationKeys.indexOf(keyB))
+      .map(([, value]) => value)
+      .join('_')}`,
   );
 
   const notifier = new Notifier({
@@ -40,6 +46,7 @@ async function main() {
     introVideoPath: path.join(dataRoot, './intro.mp4'),
     separatorVideoPath: path.join(dataRoot, './seperator.mp4'),
     outroVideoPath: path.join(dataRoot, './outro.mp4'),
+    clipsDownloadPath: path.join(outputDirectory, './clips'),
     tempDirectory: tempRoot,
     outputDirectory,
   });
