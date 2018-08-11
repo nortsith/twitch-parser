@@ -101,7 +101,7 @@ export default function createTwitchVideoCompiler(
             outputPath,
             fontPath,
             clip.broadcaster.name,
-            clip.game,
+            clip.game.replace(/[^\w\s]/gi, ''),
           );
         }
 
