@@ -84,7 +84,7 @@ export default function createTwitchVideoCompiler(
         eventManager.send({ name: 'downloadingClip', clip });
 
         const url = getTwitchClipVideoUrl(clip);
-        const downloadPath = path.join(outputDirectory, `./clips/${clip.id}.mp4`);
+        const downloadPath = path.join(clipsDownloadPath, `./${clip.id}.mp4`);
         if (!(await fse.exists(downloadPath))) {
           await downloadFile(url, downloadPath);
         }
