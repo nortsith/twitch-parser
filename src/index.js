@@ -21,12 +21,16 @@ function getFormattedDate() {
 async function main() {
   const configuration = await getConfiguration();
 
+  const configurationKeys = ['size', 'period', 'language', 'trending', 'channel'];
+
   const outputDirectory = path.join(
     projectRoot,
     './videos',
     getFormattedDate(),
-    `${Object.values(configuration)
-      .filter(Boolean)
+    `${Object.entries(configuration)
+      .filter(([key, value]) => Boolean(value) && configurationKeys.includes(key))
+      .sort(([keyA], [keyB]) => configurationKeys.indexOf(keyA) - configurationKeys.indexOf(keyB))
+      .map(([, value]) => value)
       .join('_')}`,
   );
 
