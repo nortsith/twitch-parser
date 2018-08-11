@@ -15,9 +15,10 @@ export default function buildDescription(
 --Details--
 Clips: ${configuration.size}
 Period: ${configuration.period}
-Language: ${configuration.language}
+Language: ${configuration.language || 'Not Specified'}
 Trending: ${configuration.trending ? 'true' : 'false'}
 Game: ${configuration.game || 'Not Specified'}
+Channel: ${configuration.channel || 'Not Specified'}
 Generated in ${minutes < 10 ? `0${minutes}` : minutes}:${
     seconds < 10 ? `0${seconds}` : seconds
   } minutes.
