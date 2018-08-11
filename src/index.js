@@ -26,8 +26,8 @@ async function main() {
     './videos',
     getFormattedDate(),
     `${Object.values(configuration)
-      .join('_')
-      .replace(/__/g, '_')}`,
+      .filter(Boolean)
+      .join('_')}`,
   );
 
   const notifier = new Notifier({
