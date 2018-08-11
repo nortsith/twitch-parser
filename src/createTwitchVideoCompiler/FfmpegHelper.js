@@ -30,7 +30,13 @@ export default class FfmpegHelper {
     return childProcess.spawn(this.command, args, options);
   }
 
-  async transcodeVideo(inputPath: string, outputPath: string): Promise<void> {
+  async transcodeVideo(
+    inputPath: string,
+    outputPath: string,
+    fontPath: string,
+    broadcaster: string,
+    game: string,
+  ): Promise<void> {
     const ffmpeg = this.spawn(
       // prettier-ignore
       [
@@ -40,6 +46,9 @@ export default class FfmpegHelper {
         '-ac', '1',
         '-ar', '48000',
         '-preset', 'ultrafast',
+        '-vf', `scale=1920:-1,
+                drawtext=fontfile=${fontPath}: text=${broadcaster}: fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=40,
+                drawtext=fontfile=${fontPath}: text=${game}: fontcolor=black: fontsize=20: box=1: boxcolor=white@0.9: boxborderw=10: x=(w-text_w)-10: y=100`,
         outputPath,
         '-y',
       ],

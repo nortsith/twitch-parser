@@ -23,6 +23,7 @@ type Configuration = {
   separatorVideoPath: string,
   outroVideoPath: string,
   clipsDownloadPath: string,
+  fontPath: string,
   tempDirectory: string,
   outputDirectory: string,
 };
@@ -52,6 +53,7 @@ export default function createTwitchVideoCompiler(
       separatorVideoPath,
       outroVideoPath,
       clipsDownloadPath,
+      fontPath,
       tempDirectory,
     } = configuration;
 
@@ -94,7 +96,13 @@ export default function createTwitchVideoCompiler(
 
         const outputPath = path.join(tempDirectory, `./${clip.id}_transcoded.mp4`);
         if (!(await fse.exists(outputPath))) {
-          await ffmpegHelper.transcodeVideo(downloadPath, outputPath);
+          await ffmpegHelper.transcodeVideo(
+            downloadPath,
+            outputPath,
+            fontPath,
+            clip.broadcaster.name,
+            clip.game,
+          );
         }
 
         return {
