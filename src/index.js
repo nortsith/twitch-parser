@@ -26,7 +26,6 @@ async function main() {
     './videos',
     getFormattedDate(),
     `${Object.values(configuration)
-      .map((value) => value)
       .join('_')
       .replace(/__/g, '_')}`,
   );
