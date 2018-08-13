@@ -136,16 +136,14 @@ export default function createTwitchVideoCompiler(
 
     // Write Description
     const elapsedTime = (Date.now() - startTime) / 1000;
-    const description = buildDescription(configuration, clips, elapsedTime);
-    const descriptionPath = path.join(outputDirectory, './description.txt');
+    const videoInfo = buildDescription(configuration, clips, elapsedTime);
 
-    await fse.writeFile(descriptionPath, description);
-
+    // Upload
     await youtubeUploader('./client_secret.json', {
       language: configuration.language,
-      description: 'Test',
-      tags: 'onur, alican',
-      title: 'Test upload',
+      description: videoInfo.description,
+      tags: videoInfo.tags,
+      title: 'Previously On Twitch',
       privacy: 'private',
       videoPath: outputPath,
     });

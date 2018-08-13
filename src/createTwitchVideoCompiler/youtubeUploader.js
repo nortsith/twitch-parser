@@ -1,10 +1,8 @@
-/* eslint-disable */
+// @flow
 
 import fs from 'fs';
 import readline from 'readline';
-import util from 'util';
 import { google } from 'googleapis';
-import { resolve } from 'url';
 
 export default async function youtubeUploader(
   clientFilePath: string,
@@ -18,15 +16,145 @@ export default async function youtubeUploader(
   },
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const OAuth2 = google.auth.OAuth2;
+    const { OAuth2 } = google.auth;
     const SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl'];
-    const TOKEN_DIR =
-      (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) + '/.credentials/';
-    const TOKEN_PATH = TOKEN_DIR + 'twitch-parser.json';
+    const TOKEN_DIR = `${process.env.HOME ||
+      process.env.HOMEPATH ||
+      process.env.USERPROFILE}/.credentials/`;
+    const TOKEN_PATH = `${TOKEN_DIR}twitch-parser.json`;
 
-    fs.readFile(clientFilePath, function processClientSecrets(err, content) {
+    function storeToken(token) {
+      try {
+        fs.mkdirSync(TOKEN_DIR);
+      } catch (err) {
+        if (err.code !== 'EEXIST') {
+          throw err;
+        }
+      }
+      fs.writeFile(TOKEN_PATH, JSON.stringify(token));
+      console.log(`Token stored to ${TOKEN_PATH}`);
+    }
+
+    function getNewToken(oauth2Client, requestData, callback) {
+      const authUrl = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+      });
+
+      console.log('Authorize this app by visiting this url: ', authUrl);
+
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      rl.question('Enter the code from that page here: ', (code) => {
+        rl.close();
+
+        oauth2Client.getToken(code, (err, token) => {
+          const client = oauth2Client;
+
+          if (err) {
+            console.log('Error while trying to retrieve access token', err);
+            return;
+          }
+
+          client.credentials = token;
+
+          storeToken(token);
+
+          callback(client, requestData);
+        });
+      });
+    }
+
+    function removeEmptyParameters(params) {
+      const parameters = params;
+
+      Object.keys(parameters).forEach((value) => {
+        if (!parameters[value] || parameters[value] === 'undefined') {
+          delete parameters[value];
+        }
+      });
+
+      return parameters;
+    }
+
+    function createResource(props) {
+      const resource = {};
+      const normalizedProps = props;
+
+      Object.keys(props).forEach((p) => {
+        const value = props[p];
+        if (p && p.substr(-2, 2) === '[]') {
+          const adjustedName = p.replace('[]', '');
+          if (value) {
+            normalizedProps[adjustedName] = value.split(',');
+          }
+          delete normalizedProps[p];
+        }
+      });
+
+      Object.keys(normalizedProps).forEach((p) => {
+        if (Object.prototype.hasOwnProperty.call(normalizedProps, p) && normalizedProps[p]) {
+          const propArray = p.split('.');
+          let ref = resource;
+          for (let pa = 0; pa < propArray.length; pa += 1) {
+            const key = propArray[pa];
+            if (pa === propArray.length - 1) {
+              ref[key] = normalizedProps[p];
+            } else {
+              ref[key] = ref[key] || {};
+              ref = ref[key];
+            }
+          }
+        }
+      });
+
+      return resource;
+    }
+
+    function videosInsert(auth, requestData) {
+      const service = google.youtube('v3');
+      const parameters = removeEmptyParameters(requestData.params);
+      parameters.auth = auth;
+      parameters.media = { body: fs.createReadStream(requestData.mediaFilename) };
+      parameters.notifySubscribers = false;
+      parameters.resource = createResource(requestData.properties);
+      service.videos.insert(parameters, (err, data) => {
+        if (err) {
+          console.log(`The API returned an error: ${err}`);
+          reject();
+        }
+        if (data) {
+          resolve();
+        }
+        process.exit();
+      });
+
+      console.log('Uploading...');
+    }
+
+    fs.readFile(clientFilePath, (err, content) => {
+      function authorize(credentials, requestData, callback) {
+        const clientSecret = credentials.installed.client_secret;
+        const clientId = credentials.installed.client_id;
+        const redirectUrl = credentials.installed.redirect_uris[0];
+        const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
+
+        // Check if we have previously stored a token.
+        fs.readFile(TOKEN_PATH, (error, token) => {
+          if (error) {
+            getNewToken(oauth2Client, requestData, callback);
+          } else {
+            oauth2Client.credentials = JSON.parse(token);
+            callback(oauth2Client, requestData);
+          }
+        });
+      }
+
       if (err) {
-        console.log('Error loading client secret file: ' + err);
+        console.log(`Error loading client secret file: ${err}`);
         return;
       }
 
@@ -49,124 +177,6 @@ export default async function youtubeUploader(
         },
         videosInsert,
       );
-
-      function authorize(credentials, requestData, callback) {
-        var clientSecret = credentials.installed.client_secret;
-        var clientId = credentials.installed.client_id;
-        var redirectUrl = credentials.installed.redirect_uris[0];
-        var oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
-
-        // Check if we have previously stored a token.
-        fs.readFile(TOKEN_PATH, function(err, token) {
-          if (err) {
-            getNewToken(oauth2Client, requestData, callback);
-          } else {
-            oauth2Client.credentials = JSON.parse(token);
-            callback(oauth2Client, requestData);
-          }
-        });
-      }
     });
-
-    function getNewToken(oauth2Client, requestData, callback) {
-      var authUrl = oauth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: SCOPES,
-      });
-      console.log('Authorize this app by visiting this url: ', authUrl);
-      var rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-      });
-      rl.question('Enter the code from that page here: ', function(code) {
-        rl.close();
-        oauth2Client.getToken(code, function(err, token) {
-          if (err) {
-            console.log('Error while trying to retrieve access token', err);
-            return;
-          }
-          oauth2Client.credentials = token;
-          storeToken(token);
-          callback(oauth2Client, requestData);
-        });
-      });
-    }
-
-    function storeToken(token) {
-      try {
-        fs.mkdirSync(TOKEN_DIR);
-      } catch (err) {
-        if (err.code != 'EEXIST') {
-          throw err;
-        }
-      }
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token));
-      console.log('Token stored to ' + TOKEN_PATH);
-    }
-
-    function removeEmptyParameters(params) {
-      for (var p in params) {
-        if (!params[p] || params[p] == 'undefined') {
-          delete params[p];
-        }
-      }
-      return params;
-    }
-
-    function createResource(properties) {
-      var resource = {};
-      var normalizedProps = properties;
-      for (var p in properties) {
-        var value = properties[p];
-        if (p && p.substr(-2, 2) == '[]') {
-          var adjustedName = p.replace('[]', '');
-          if (value) {
-            normalizedProps[adjustedName] = value.split(',');
-          }
-          delete normalizedProps[p];
-        }
-      }
-      for (var p in normalizedProps) {
-        if (normalizedProps.hasOwnProperty(p) && normalizedProps[p]) {
-          var propArray = p.split('.');
-          var ref = resource;
-          for (var pa = 0; pa < propArray.length; pa++) {
-            var key = propArray[pa];
-            if (pa == propArray.length - 1) {
-              ref[key] = normalizedProps[p];
-            } else {
-              ref = ref[key] = ref[key] || {};
-            }
-          }
-        }
-      }
-      return resource;
-    }
-
-    function videosInsert(auth, requestData) {
-      var service = google.youtube('v3');
-      var parameters = removeEmptyParameters(requestData['params']);
-      parameters['auth'] = auth;
-      parameters['media'] = { body: fs.createReadStream(requestData['mediaFilename']) };
-      parameters['notifySubscribers'] = false;
-      parameters['resource'] = createResource(requestData['properties']);
-      var req = service.videos.insert(parameters, function(err, data) {
-        if (err) {
-          console.log('The API returned an error: ' + err);
-          reject();
-        }
-        if (data) {
-          resolve();
-        }
-        process.exit();
-      });
-
-      var fileSize = fs.statSync(requestData['mediaFilename']).size;
-      var id = setInterval(function() {
-        process.stdout.clearLine();
-        process.stdout.cursorTo(0);
-        process.stdout.write('Uploading...');
-      }, 250);
-    }
   });
 }
