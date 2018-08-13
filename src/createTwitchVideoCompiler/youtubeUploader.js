@@ -18,8 +18,11 @@ export default async function youtubeUploader(
   return new Promise((resolve, reject) => {
     const { OAuth2 } = google.auth;
     const SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl'];
+    // $FlowFixMe
     const TOKEN_DIR = `${process.env.HOME ||
+      // $FlowFixMe
       process.env.HOMEPATH ||
+      // $FlowFixMe
       process.env.USERPROFILE}/.credentials/`;
     const TOKEN_PATH = `${TOKEN_DIR}twitch-parser.json`;
 
@@ -117,9 +120,13 @@ export default async function youtubeUploader(
     function videosInsert(auth, requestData) {
       const service = google.youtube('v3');
       const parameters = removeEmptyParameters(requestData.params);
+      // $FlowFixMe
       parameters.auth = auth;
+      // $FlowFixMe
       parameters.media = { body: fs.createReadStream(requestData.mediaFilename) };
+      // $FlowFixMe
       parameters.notifySubscribers = false;
+      // $FlowFixMe
       parameters.resource = createResource(requestData.properties);
       service.videos.insert(parameters, (err, data) => {
         if (err) {
@@ -147,6 +154,7 @@ export default async function youtubeUploader(
           if (error) {
             getNewToken(oauth2Client, requestData, callback);
           } else {
+            // $FlowFixMe
             oauth2Client.credentials = JSON.parse(token);
             callback(oauth2Client, requestData);
           }
@@ -154,11 +162,13 @@ export default async function youtubeUploader(
       }
 
       if (err) {
+        // $FlowFixMe
         console.log(`Error loading client secret file: ${err}`);
         return;
       }
 
       authorize(
+        // $FlowFixMe
         JSON.parse(content),
         {
           params: { part: 'snippet,status' },

@@ -6,7 +6,10 @@ export default function buildDescription(
   configuration: $FlowFixMe,
   clips: Array<TwitchClip>,
   elapsedTime: number,
-): string {
+): {
+  description: string,
+  tags: string,
+} {
   const minutes = Number((elapsedTime / 60).toFixed(0));
   const seconds = Number((elapsedTime % 60).toFixed(0));
   const games = clips.map((clip) => clip.game);
