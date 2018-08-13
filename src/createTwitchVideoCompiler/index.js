@@ -10,6 +10,7 @@ import downloadFile from './downloadFile';
 import getClips, { type TwitchClip } from './getClips';
 import getTwitchClipVideoUrl from './getTwitchClipVideoUrl';
 import buildDescription from './buildDescription';
+import youtubeUploader from './youtubeUploader';
 
 type Configuration = {
   size: number,
@@ -139,6 +140,15 @@ export default function createTwitchVideoCompiler(
     const descriptionPath = path.join(outputDirectory, './description.txt');
 
     await fse.writeFile(descriptionPath, description);
+
+    await youtubeUploader('./client_secret.json', {
+      language: configuration.language,
+      description: 'Test',
+      tags: 'onur, alican',
+      title: 'Test upload',
+      privacy: 'private',
+      videoPath: outputPath,
+    });
 
     eventManager.send({ name: 'complete', clips, elapsedTime });
 
