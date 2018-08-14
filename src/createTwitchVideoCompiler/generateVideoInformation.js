@@ -2,7 +2,7 @@
 
 import { type TwitchClip } from './getClips';
 
-export default function buildDescription(
+export default function generateVideoInformation(
   configuration: $FlowFixMe,
   clips: Array<TwitchClip>,
   elapsedTime: number,
