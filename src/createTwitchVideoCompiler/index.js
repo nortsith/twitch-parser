@@ -11,6 +11,7 @@ import getClips, { type TwitchClip } from './getClips';
 import getTwitchClipVideoUrl from './getTwitchClipVideoUrl';
 import generateVideoInformation from './generateVideoInformation';
 import uploadToYoutube from './uploadToYoutube';
+import youtubeAuthorize from './youtubeAuthorize';
 
 type Configuration = {
   size: number,
@@ -60,6 +61,8 @@ export default function createTwitchVideoCompiler(
 
     // Setup FfmpegHelper
     const ffmpegHelper = new FfmpegHelper(ffmpegCommand);
+
+    const authorization = await youtubeAuthorize();
 
     const startTime = Date.now();
 
@@ -139,7 +142,7 @@ export default function createTwitchVideoCompiler(
     const videoInfo = generateVideoInformation(configuration, clips, elapsedTime);
 
     // Upload
-    await uploadToYoutube('./client_secret.json', {
+    await uploadToYoutube(authorization, {
       language: configuration.language,
       description: videoInfo.description,
       tags: videoInfo.tags,
