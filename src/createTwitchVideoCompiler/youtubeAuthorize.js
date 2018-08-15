@@ -1,8 +1,9 @@
 // @flow
 
 import fse from 'fs-extra';
-import readline from 'readline';
 import { google } from 'googleapis';
+
+import getAccessToken from './getAccessToken';
 
 const { OAuth2 } = google.auth;
 const SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl'];
@@ -22,35 +23,26 @@ type Content = {
 };
 
 async function getNewToken(oauth2Client) {
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+  });
+
+  const auth = await getAccessToken(authUrl);
+
   return new Promise((resolve, reject) => {
-    const authUrl = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: SCOPES,
-    });
+    oauth2Client.getToken(auth.accessToken, (err, token) => {
+      const client = oauth2Client;
 
-    console.log('Authorize this app by visiting this url: ', authUrl);
+      if (err) {
+        console.log('Error while trying to retrieve access token', err);
+        reject();
+        return;
+      }
 
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
+      client.credentials = token;
 
-    rl.question('Enter the code from that page here: ', (code) => {
-      rl.close();
-
-      oauth2Client.getToken(code, (err, token) => {
-        const client = oauth2Client;
-
-        if (err) {
-          console.log('Error while trying to retrieve access token', err);
-          reject();
-          return;
-        }
-
-        client.credentials = token;
-
-        resolve(token);
-      });
+      resolve(token);
     });
   });
 }
