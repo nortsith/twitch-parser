@@ -4,53 +4,49 @@ import fs from 'fs';
 import { google } from 'googleapis';
 
 async function removeEmptyParameters(params) {
-  return new Promise((resolve) => {
-    const parameters = params;
+  const parameters = params;
 
-    Object.keys(parameters).forEach((value) => {
-      if (!parameters[value] || parameters[value] === 'undefined') {
-        delete parameters[value];
-      }
-    });
-
-    resolve(parameters);
+  Object.keys(parameters).forEach((value) => {
+    if (!parameters[value] || parameters[value] === 'undefined') {
+      delete parameters[value];
+    }
   });
+
+  return parameters;
 }
 
 async function createResource(props) {
-  return new Promise((resolve) => {
-    const resource = {};
-    const normalizedProps = props;
+  const resource = {};
+  const normalizedProps = props;
 
-    Object.keys(props).forEach((p) => {
-      const value = props[p];
-      if (p && p.substr(-2, 2) === '[]') {
-        const adjustedName = p.replace('[]', '');
-        if (value) {
-          normalizedProps[adjustedName] = value.split(',');
-        }
-        delete normalizedProps[p];
+  Object.keys(props).forEach((p) => {
+    const value = props[p];
+    if (p && p.substr(-2, 2) === '[]') {
+      const adjustedName = p.replace('[]', '');
+      if (value) {
+        normalizedProps[adjustedName] = value.split(',');
       }
-    });
-
-    Object.keys(normalizedProps).forEach((p) => {
-      if (Object.prototype.hasOwnProperty.call(normalizedProps, p) && normalizedProps[p]) {
-        const propArray = p.split('.');
-        let ref = resource;
-        for (let pa = 0; pa < propArray.length; pa += 1) {
-          const key = propArray[pa];
-          if (pa === propArray.length - 1) {
-            ref[key] = normalizedProps[p];
-          } else {
-            ref[key] = ref[key] || {};
-            ref = ref[key];
-          }
-        }
-      }
-    });
-
-    resolve(resource);
+      delete normalizedProps[p];
+    }
   });
+
+  Object.keys(normalizedProps).forEach((p) => {
+    if (Object.prototype.hasOwnProperty.call(normalizedProps, p) && normalizedProps[p]) {
+      const propArray = p.split('.');
+      let ref = resource;
+      for (let pa = 0; pa < propArray.length; pa += 1) {
+        const key = propArray[pa];
+        if (pa === propArray.length - 1) {
+          ref[key] = normalizedProps[p];
+        } else {
+          ref[key] = ref[key] || {};
+          ref = ref[key];
+        }
+      }
+    }
+  });
+
+  return resource;
 }
 
 export default async function uploadToYoutube(
