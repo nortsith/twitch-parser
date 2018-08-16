@@ -3,7 +3,7 @@
 import fs from 'fs';
 import { google } from 'googleapis';
 
-async function removeEmptyParameters(params) {
+function removeEmptyParameters(params): $FlowFixMe {
   const parameters = params;
 
   Object.keys(parameters).forEach((value) => {
@@ -15,7 +15,7 @@ async function removeEmptyParameters(params) {
   return parameters;
 }
 
-async function createResource(props) {
+function createResource(props: $FlowFixMe): {} {
   const resource = {};
   const normalizedProps = props;
 
@@ -77,15 +77,11 @@ export default async function uploadToYoutube(
   };
 
   const service = google.youtube('v3');
-  const parameters = await removeEmptyParameters(requestData.params);
-  // $FlowFixMe
+  const parameters = removeEmptyParameters(requestData.params);
   parameters.auth = authorization;
-  // $FlowFixMe
   parameters.media = { body: fs.createReadStream(requestData.mediaFilename) };
-  // $FlowFixMe
   parameters.notifySubscribers = false;
-  // $FlowFixMe
-  parameters.resource = await createResource(requestData.properties);
+  parameters.resource = createResource(requestData.properties);
 
   console.log('Uploading video...');
 

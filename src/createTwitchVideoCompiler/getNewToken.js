@@ -1,8 +1,10 @@
+// @flow
+
 import getAccessToken from './getAccessToken';
 
 const SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl'];
 
-export default async function(oauth2Client) {
+export default async function(oauth2Client: $FlowFixMe): Promise<string> {
   const authUrl = await oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
