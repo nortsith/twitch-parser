@@ -1,9 +1,10 @@
 // @flow
 
 import inquirer from 'inquirer';
+import opn from 'opn';
 
 export default async function getAccessToken(url: string) {
-  console.log('Authorize this app by visiting this url: ', url);
+  opn(url);
 
   return inquirer.prompt({
     message: `Enter the code from that page here:`,
