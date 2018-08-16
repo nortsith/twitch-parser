@@ -87,18 +87,7 @@ export default async function uploadToYoutube(
   // $FlowFixMe
   parameters.resource = await createResource(requestData.properties);
 
-  return new Promise((resolve, reject) => {
-    service.videos.insert(parameters, (err, data) => {
-      if (err) {
-        console.log(`The API returned an error: ${err}`);
-        reject();
-      }
-      if (data) {
-        resolve();
-      }
-      process.exit();
-    });
+  console.log('Uploading video...');
 
-    console.log('Uploading...');
-  });
+  await service.videos.insert(parameters);
 }
