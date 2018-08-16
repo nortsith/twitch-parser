@@ -9,7 +9,9 @@ import FfmpegHelper from './FfmpegHelper';
 import downloadFile from './downloadFile';
 import getClips, { type TwitchClip } from './getClips';
 import getTwitchClipVideoUrl from './getTwitchClipVideoUrl';
-import buildDescription from './buildDescription';
+import generateVideoInformation from './generateVideoInformation';
+import uploadToYoutube from './uploadToYoutube';
+import youtubeAuthorize from './youtubeAuthorize';
 
 type Configuration = {
   size: number,
@@ -59,6 +61,8 @@ export default function createTwitchVideoCompiler(
 
     // Setup FfmpegHelper
     const ffmpegHelper = new FfmpegHelper(ffmpegCommand);
+
+    const authorization = await youtubeAuthorize();
 
     const startTime = Date.now();
 
@@ -135,10 +139,17 @@ export default function createTwitchVideoCompiler(
 
     // Write Description
     const elapsedTime = (Date.now() - startTime) / 1000;
-    const description = buildDescription(configuration, clips, elapsedTime);
-    const descriptionPath = path.join(outputDirectory, './description.txt');
+    const videoInfo = generateVideoInformation(configuration, clips, elapsedTime);
 
-    await fse.writeFile(descriptionPath, description);
+    // Upload
+    await uploadToYoutube(authorization, {
+      language: configuration.language,
+      description: videoInfo.description,
+      tags: videoInfo.tags,
+      title: 'Previously On Twitch',
+      privacy: 'private',
+      videoPath: outputPath,
+    });
 
     eventManager.send({ name: 'complete', clips, elapsedTime });
 
