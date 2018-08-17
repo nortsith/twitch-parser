@@ -145,7 +145,7 @@ export default function createTwitchVideoCompiler(
     await uploadToYoutube(authorization, {
       language: configuration.language,
       description: videoInfo.description,
-      tags: videoInfo.tags,
+      tags: videoInfo.tags.split(','),
       title: 'Previously On Twitch',
       privacy: 'private',
       videoPath: outputPath,

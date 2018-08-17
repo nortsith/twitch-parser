@@ -3,87 +3,48 @@
 import fs from 'fs';
 import { google } from 'googleapis';
 
-function removeEmptyParameters(params): $FlowFixMe {
-  const parameters = params;
+export type Properties = {
+  language: string,
+  description: string,
+  tags: Array<string>,
+  title: string,
+  privacy: string,
+  videoPath: string,
+};
 
-  Object.keys(parameters).forEach((value) => {
-    if (!parameters[value] || parameters[value] === 'undefined') {
-      delete parameters[value];
-    }
-  });
+export function createParameters(authorization: $FlowFixMe, properties: Properties) {
+  // https://developers.google.com/youtube/v3/docs/videos/insert#parameters
+  const parameters = {
+    part: 'snippet,status',
+    auth: authorization,
+    media: { body: fs.createReadStream(properties.videoPath) },
+    notifySubscribers: false,
+    resource: {
+      snippet: {
+        categoryId: '20',
+        defaultLanguage: properties.language,
+        description: properties.description,
+        tags: properties.tags,
+        title: properties.title,
+      },
+      status: {
+        privacyStatus: properties.privacy,
+      },
+    },
+  };
 
   return parameters;
 }
 
-function createResource(props: $FlowFixMe): {} {
-  const resource = {};
-  const normalizedProps = props;
-
-  Object.keys(props).forEach((p) => {
-    const value = props[p];
-    if (p && p.substr(-2, 2) === '[]') {
-      const adjustedName = p.replace('[]', '');
-      if (value) {
-        normalizedProps[adjustedName] = value.split(',');
-      }
-      delete normalizedProps[p];
-    }
-  });
-
-  Object.keys(normalizedProps).forEach((p) => {
-    if (Object.prototype.hasOwnProperty.call(normalizedProps, p) && normalizedProps[p]) {
-      const propArray = p.split('.');
-      let ref = resource;
-      for (let pa = 0; pa < propArray.length; pa += 1) {
-        const key = propArray[pa];
-        if (pa === propArray.length - 1) {
-          ref[key] = normalizedProps[p];
-        } else {
-          ref[key] = ref[key] || {};
-          ref = ref[key];
-        }
-      }
-    }
-  });
-
-  return resource;
-}
-
 export default async function uploadToYoutube(
-  authorization: {},
-  properties: {
-    language: string,
-    description: string,
-    tags: string,
-    title: string,
-    privacy: string,
-    videoPath: string,
-  },
+  authorization: $FlowFixMe,
+  properties: Properties,
 ): Promise<void> {
-  const requestData = {
-    params: { part: 'snippet,status' },
-    properties: {
-      'snippet.categoryId': '20',
-      'snippet.defaultLanguage': properties.language,
-      'snippet.description': properties.description,
-      'snippet.tags[]': properties.tags,
-      'snippet.title': properties.title,
-      'status.embeddable': '',
-      'status.license': '',
-      'status.privacyStatus': properties.privacy,
-      'status.publicStatsViewable': '',
-    },
-    mediaFilename: properties.videoPath,
-  };
-
-  const service = google.youtube('v3');
-  const parameters = removeEmptyParameters(requestData.params);
-  parameters.auth = authorization;
-  parameters.media = { body: fs.createReadStream(requestData.mediaFilename) };
-  parameters.notifySubscribers = false;
-  parameters.resource = createResource(requestData.properties);
+  const parameters = createParameters(authorization, properties);
 
   console.log('Uploading video...');
+
+  const service = google.youtube('v3');
 
   await service.videos.insert(parameters);
 }
