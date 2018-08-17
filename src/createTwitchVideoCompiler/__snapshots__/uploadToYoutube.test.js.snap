@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`createParameters 1`] = `
+Object {
+  "auth": null,
+  "media": Object {
+    "body": null,
+  },
+  "notifySubscribers": false,
+  "part": "snippet,status",
+  "resource": Object {
+    "snippet": Object {
+      "categoryId": "20",
+      "defaultLanguage": "en",
+      "description": "desc",
+      "tags": Array [
+        "tagOne",
+        "tagTwo",
+      ],
+      "title": "title",
+    },
+    "status": Object {
+      "privacyStatus": "private",
+    },
+  },
+}
+`;
